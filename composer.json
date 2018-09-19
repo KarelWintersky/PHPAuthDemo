@@ -1,0 +1,16 @@
+{
+    "require": {
+        "pecee/simple-router": "4.2.0.5"
+    },
+    "autoload": {
+        "files": [
+            "engine/websun.php",
+            "engine/Classes/Config.php",
+            "engine/Classes/DB.php",
+            "engine/Classes/Template.php"
+        ],
+        "psr-4": {
+            "PHPAuthDemo\\" : "engine/"
+        }
+    }
+}
