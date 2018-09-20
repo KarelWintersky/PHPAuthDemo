@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PHPAuthDemo -- Registration page</title>
+
+    <style>
+        .hint {
+            font-size: small; font-style: italic; color: red;
+        }
+    </style>
+    <script type="text/javascript">
+        window.onload = function() { document.getElementById("reg_username").focus(); }
+    </script>
+</head>
+<body>
+<h2>Registration page</h2>
+
+<form action="/registration" method="post">
+    <table>
+        <tr>
+            <td>
+                <label for="reg_username">My name:</label>
+            </td>
+            <td>
+                <input type="text" size="25" id="reg_username" name="register:data:username" required tabindex="1" autofocus>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="reg_gender">My gender: </label>
+            </td>
+            <td>
+                <select id="reg_gender" name="register:data:gender">
+                    <option value="M">lord</option>
+                    <option value="F">lady</option>
+                    <option value="N">unknown</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="reg_city">My city: </label>
+            </td>
+            <td>
+                <input type="text" size="25" id="reg_city" name="register:data:city">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="reg_birthday">My birthday<br/> (DD/MM/YYYY):</label>
+            </td>
+            <td>
+                <input type="text" size="25" id="reg_birthday" name="register:data:birthday">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="reg_email">My login (E-Mail):</label>
+            </td>
+            <td>
+                <input type="email" size="15" id="reg_email" name="register:data:email">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="reg_password">Password:</label>
+            </td>
+            <td>
+                <input type="password" size="15" id="reg_password" name="register:data:password"><br/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="reg_password_again">Password (repeat):</label>
+            </td>
+            <td>
+                <input type="text" size="15" id="reg_password_again" name="register:data:password_again">
+                {?*is_strong_password*}
+                <br/><span class="hint">Password must be strong</span>
+                {?}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button name="register:action:doit" value="register">Register account >>> </button>
+            </td>
+        </tr>
+        <tr>
+            {?!*is_activation_required*}
+            <td colspan="2">
+                Activation not required now.
+            </td>
+            {?}
+        </tr>
+    </table>
+</form>
+
+<hr>
+<a href="/">Back to frontpage</a>
+
+
+</body>
+</html>
+

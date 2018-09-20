@@ -1,7 +1,7 @@
 <?php
 
 /**
- * User: Arris
+ * User: Karel Wintersky
  *
  * Class Template
  *
@@ -34,7 +34,7 @@ class Template
         $this->template_file = $file;
         $this->template_path = $path;
 
-        $this->template_real_filepath = "{$path}/{$file}";
+        $this->template_real_filepath = preg_replace('/^\$/', $_SERVER['DOCUMENT_ROOT'], $path) . '/' . $file;
 
         $this->template_data = [];
         $this->http_status = 200;
@@ -101,7 +101,12 @@ class Template
     public function set($key, $value)
     {
         $segs = explode($this::GLUE, $key);
+
+        // remove first element if empty: '/body' === 'body'
+        if ($segs[0] == "") unset($segs[0]);
+
         $root = &$this->template_data;
+
         $cacheKey = '';
         // Look for the key, creating nested keys if needed
         while ($part = array_shift($segs)) {
@@ -109,6 +114,9 @@ class Template
                 $cacheKey .= $this::GLUE;
             }
             $cacheKey .= $part;
+
+            var_dump($cacheKey);
+
             if (!isset($root[$part]) && count($segs)) {
                 $root[$part] = array();
             }
@@ -126,6 +134,7 @@ class Template
                 }
             }
         }
+
         // Assign value at target node
         $this->cache[$key] = $root = $value;
     }
@@ -176,6 +185,25 @@ class Template
         }
 
         return false;
+    }
+
+    public function test()
+    {
+        $t = new Template('', '');
+
+        $t->set('/body', [
+            'a' =>  '1',
+            'b' =>  '2'
+        ]);
+
+        $t->set('head/meta', [
+            'c' =>  '3',
+            'd' =>  '4'
+        ]);
+
+        var_dump($t->all());
+
+
     }
 
 

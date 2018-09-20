@@ -1,6 +1,6 @@
 <?php
 /**
- * User: Arris
+ * User: Karel Wintersky
  * Date: 19.09.2018, time: 17:25
  */
 
@@ -24,12 +24,6 @@ $config = [
 DB::init(NULL, $config);
 
 $dbh = DB::getConnection();
-
-$t = new Template('a.html', 'b');
-
-$t->set('body', 'text');
-
-var_dump($t->all());
 
 // use PHPAuth\Config as PHPAuthConfig;
 // use PHPAuth\Auth as PHPAuth;

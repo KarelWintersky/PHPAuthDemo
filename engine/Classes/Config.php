@@ -5,27 +5,32 @@
  */
 
 /**
- * Простейший Config-класс для упрощения доступа к конфигу.
- * Базируется на ArrisFramework/App class
+ * Simple config-class.
+ * Based on ArrisFramework/App class
  *
- * Предполагает инициализацию вида
- *
- * Config::init( include  'config/config.php' );
+ * Required initialization like: `Config::init( include  'config/config.php' );`
  *
  * Class Config
  */
 class Config {
-    const VERSION = '1.0';
+    const VERSION = '1.1';
 
     const GLUE = '/';
     private static $config = [];
 
 
+    /**
+     *
+     * @param $data
+     */
     public static function init_once($data)
     {
         self::$config = $data;
     }
 
+    /**
+     * @param $configs_set
+     */
     public static function init($configs_set)
     {
         if (is_array($configs_set)) {
@@ -40,6 +45,11 @@ class Config {
 
     }
 
+    /**
+     * @param $parents
+     * @param null $default_value
+     * @return array|mixed|null
+     */
     public static function get($parents, $default_value = null)
     {
         if ($parents === '') {
@@ -63,6 +73,11 @@ class Config {
 
     }
 
+    /**
+     * @param $parents
+     * @param $value
+     * @return bool
+     */
     public static function set($parents, $value)
     {
         if (!is_array($parents)) {
@@ -85,12 +100,18 @@ class Config {
         return true;
     }
 
+    /**
+     * Dumps config
+     */
     public static function d()
     {
         echo '<pre>';
         print_r(self::$config);
     }
 
+    /**
+     * Dumps config and die
+     */
     public static function dd()
     {
         self::d();
@@ -98,11 +119,10 @@ class Config {
     }
 
 
-
     /**
-     *
+     * @param $file
+     * @param string $subpath
      */
-
     public static function config_append($file, $subpath = '')
     {
         $new_config = include $file;
