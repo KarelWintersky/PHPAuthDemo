@@ -1,13 +1,15 @@
 {
     "require": {
-        "pecee/simple-router": "4.2.0.5"
+        "pecee/simple-router": "4.2.0.5",
+        "phpauth/phpauth": "^1.1"
     },
     "autoload": {
         "files": [
             "engine/websun.php",
             "engine/Classes/Config.php",
             "engine/Classes/DB.php",
-            "engine/Classes/Template.php"
+            "engine/Classes/Template.php",
+            "engine/Classes/Auth.php"
         ],
         "psr-4": {
             "PHPAuthDemo\\" : "engine/"

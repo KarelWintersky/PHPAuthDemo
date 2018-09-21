@@ -21,9 +21,15 @@ $config = [
     'port'      =>  3306
 ];
 
+echo '<pre>';
 DB::init(NULL, $config);
 
-$dbh = DB::getConnection();
+// var_dump( DB::getInstance()->query("SELECT * FROM phpauth_config")->fetchAll() );
+
+Auth::init(DB::getConnection());
+
+var_dump( Auth::getConfig() );
+
 
 // use PHPAuth\Config as PHPAuthConfig;
 // use PHPAuth\Auth as PHPAuth;
@@ -31,6 +37,6 @@ $dbh = DB::getConnection();
 // $config = new PHPAuthConfig($dbh);
 // $auth = new PHPAuth($dbh, $config);
 
-SimpleRouter::start();
+// SimpleRouter::start();
 
  

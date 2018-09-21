@@ -18,7 +18,6 @@ class Config {
     const GLUE = '/';
     private static $config = [];
 
-
     /**
      *
      * @param $data

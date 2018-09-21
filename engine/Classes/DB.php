@@ -1,157 +1,163 @@
 <?php
 /**
  * User: Karel Wintersky
- * Date: 26.08.2018, time: 14:25
+ * Date: 26.08.2018, time: 14:25 Version 1.5/LIBDb
+ * Date: 20.09.2018, time: 16:34 Version 2.0/ArrisFramework
+ *
  */
-
-interface DBConnectionInterface {
-
-    /**
-     * Возвращает инстанс класса
-     * @param null $suffix
-     * @return mixed
-     */
-    public static function getInstance($suffix = NULL);
-
-    /**
-     * Возвращает PDO::Connection
-     *
-     * @param null $suffix
-     * @return PDO
-     */
-    public static function getConnection($suffix = NULL):\PDO;
-
-    /**
-     * Инициализирует подключение
-     *
-     * @param null $suffix
-     * @param $config
-     * @return mixed
-     */
-    public static function init($suffix, $config);
-}
 
 /**
- * Class DB
+ * Interface DBConnectionInterface
  */
-class DB implements DBConnectionInterface {
-    const VERSION = '1.4/LIBDb';
-
-    private static $_instances = [
-    ];
-
-    private static $_configs = [
-    ];
-
-    private static $_connect_states = [
-    ];
-
-    private static $_pdo_instances = [
-    ];
-
-    /**
-     * Преобразовывает суффикс подключения во внутренний ключ соединений
-     * @param null $suffix
-     * @return string
-     */
-    private static function getKey($suffix = NULL)
-    {
-        return 'database' . ($suffix ? ":{$suffix}" : '');
-    }
-
-    /**
-     * Проверяет сущестование инстанса в массиве $_instances
-     * @param null $suffix
-     * @return bool
-     */
-    private static function checkInstance($suffix = NULL) {
-
-        $key = self::getKey($suffix);
-
-        return ( array_key_exists($key, self::$_instances) && self::$_instances[$key] !== NULL  );
-    }
-
-    /**
-     * @param null $suffix
-     * @return DB
-     */
-    public static function getInstance($suffix = NULL):DB {
-
-        $key = self::getKey($suffix);
-
-        if (!self::checkInstance($suffix)) {
-            self::$_instances[$key] = new self($suffix);
-        }
-
-        return self::$_instances[$key];
-    }
-
-    /**
-     * Возвращает PDO::Connection
-     *
-     * @param null $suffix
-     * @return \PDO
-     */
-    public static function getConnection($suffix = NULL):\PDO
-    {
-        $key = self::getKey($suffix);
-
-        if (!self::checkInstance($suffix)) {
-            self::$_instances[$key] = new self($suffix); // EQ self::getInstance($suffix);
-        }
-
-        return self::$_pdo_instances[$key];
-    }
-
+interface DBConnectionInterface
+{
     /**
      * Predicted (early) initialization
      *
      * @param null $suffix
-     */
-    public static function init($suffix, $config)
-    {
-        $config_key = self::getKey($suffix);
-        self::setConfig($config, $suffix);
-        self::$_instances[$config_key] = new self($suffix);
-    }
-
-    /**
-     * Сеттер
      * @param $config
-     * @param null $suffix
      */
-    private static function setConfig($config, $suffix = NULL)
-    {
-        $config_key = self::getKey($suffix);
-
-        self::$_configs[ $config_key ] = $config;
-    }
+    public static function init($suffix, $config);
 
     /**
-     * Геттер
+     * Get connection config
      *
      * @param null $suffix
      * @return mixed|null
      */
-    private static function getConfig($suffix = NULL)
-    {
-        $config_key = self::getKey($suffix);
-
-        return array_key_exists( $config_key, self::$_configs) ? self::$_configs[ $config_key ] : NULL;
-    }
+    public static function getConfig($suffix = NULL): array;
 
     /**
-     * DB constructor.
+     * Set connection config
+     *
+     * @param $config
      * @param null $suffix
      */
-    public function __construct($suffix = NULL)
+    public static function setConfig($config, $suffix = NULL);
+
+    /**
+     * Alias: get PDO connection
+     *
+     * @param null $suffix
+     * @return PDO
+     */
+    public static function getConnection($suffix = NULL): \PDO;
+
+    /**
+     * Set current connection key for internal calls === setContext() ?
+     *
+     * @param $suffix
+     */
+    public static function setConnection($suffix);
+
+    /**
+     * Get class instance == connection instance
+     *
+     * @param null $suffix
+     * @return PDO
+     */
+    public static function getInstance($suffix = NULL):\PDO;
+
+    /**
+     * Get tables prefix for given connection
+     *
+     * @param null $suffix
+     * @return null|string
+     */
+    public static function getTablePrefix( $suffix = NULL );
+
+    /**
+     *
+     * @param $query
+     * @param null $suffix
+     * @return bool|\PDOStatement
+     */
+    public static function query($query, $suffix = NULL);
+
+    /**
+     * Get count(*) for given table
+     *
+     * @param $table
+     * @param null $suffix
+     * @return mixed|null
+     */
+    public static function getRowCount($table, $suffix = NULL);
+
+    /**
+     * Аналог rowcound, только дает возможность выбрать поле выборки и условие
+     *
+     * @param $table
+     * @param string $field
+     * @param string $condition
+     * @param null $suffix
+     * @return mixed|null
+     */
+    public static function getRowCountConditional($table, $field = '*', $condition = '', $suffix = NULL);
+
+    /**
+     * get Last Insert ID
+     *
+     * @param null $suffix
+     */
+    public static function getLastInsertId($suffix = NULL);
+
+    /**
+     * Build INSERT-query by dataset for given table
+     *
+     * @param $tablename
+     * @param $dataset
+     * @return string
+     */
+    public static function makeInsertQuery($tablename, $dataset);
+
+    /**
+     * Build UPDATE query by dataset for given table
+     *
+     * @param $tablename
+     * @param $dataset
+     * @param string $where_condition
+     * @return bool|string
+     */
+    public static function makeUpdateQuery($tablename, $dataset, $where_condition = '');
+
+}
+
+
+
+/**
+ * Class DB
+ */
+class DB implements DBConnectionInterface
+{
+    const VERSION = '2.0/ArrisFramework';
+
+    private static $_current_connection = null;
+
+    /**
+     * \PDO instances
+     * @var array
+     */
+    private static $_instances = [];
+
+    /**
+     * DB Configs
+     * @var array
+     */
+    private static $_configs = [];
+
+    /**
+     *
+     * DB constructor.
+     * @param $suffix
+     */
+    public function __construct($suffix)
     {
         $config_key = self::getKey($suffix);
 
         $config
-            = is_null( self::getConfig($suffix) )
-            ? Config::get( $config_key )
-            : self::getConfig( $suffix );
+            = is_null(self::getConfig($suffix))
+            ? Config::get($config_key)
+            : self::getConfig($suffix);
 
         $dbhost = $config['hostname'];
         $dbname = $config['database'];
@@ -159,14 +165,13 @@ class DB implements DBConnectionInterface {
         $dbpass = $config['password'];
         $dbport = $config['port'];
 
-        $db_charset         = $config['charset']         ?? 'utf8';
+        $db_charset = $config['charset'] ?? 'utf8';
         $db_charset_collate = $config['charset_collate'] ?? 'utf8_unicode_ci';
 
-        $dsl = "mysql:host=$dbhost;port=$dbport;dbname=$dbname";
-
+        $dsl = "mysql:host={$dbhost};port={$dbport};dbname={$dbname}";
         try {
             if ($config === NULL)
-                throw new \Exception("Config section `[{$config_key}]` not declared in config workspace.\r\n" , 2);
+                throw new \Exception("Config section `[{$config_key}]` not declared in config workspace.\r\n", 2);
 
             $dbh = new \PDO($dsl, $dbuser, $dbpass);
 
@@ -174,7 +179,7 @@ class DB implements DBConnectionInterface {
             $dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             $dbh->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
 
-            self::$_pdo_instances[ $config_key ] = $dbh;
+            self::$_instances[$config_key] = $dbh;
 
             $connection_state = TRUE;
 
@@ -182,30 +187,111 @@ class DB implements DBConnectionInterface {
             $message = "Unable to connect `{$dsl}`, PDO CONNECTION ERROR: " . $pdo_e->getMessage() . "\r\n" . PHP_EOL;
 
             $connection_state = [
-                'error' =>  $message,
-                'state' =>  FALSE
+                'error' => $message,
+                'state' => FALSE
             ];
 
         } catch (\Exception $e) {
             $connection_state = [
-                'error' =>  $e->getMessage(),
-                'state' =>  FALSE
+                'error' => $e->getMessage(),
+                'state' => FALSE
             ];
-            self::$_configs[ $config_key ] = NULL;
+            self::$_configs[$config_key] = NULL;
         }
 
         if ($connection_state !== TRUE) {
             die($connection_state['error']);
         }
 
-        self::$_connect_states[ $config_key ] = $connection_state;
-        self::$_configs[ $config_key ] = $config;
+        self::$_configs[$config_key] = $config;
 
-        return true;
     }
 
     /**
+     * Predicted (early) initialization
      *
+     * @param null $suffix
+     * @param $config
+     */
+    public static function init($suffix, $config)
+    {
+        $config_key = self::getKey($suffix);
+        self::setConfig($config, $suffix);
+        self::$_instances[$config_key] = (new self($suffix))->getInstance($suffix);
+    }
+
+    /**
+     * Get connection config
+     *
+     * @param null $suffix
+     * @return mixed|null
+     */
+    public static function getConfig($suffix = NULL): array
+    {
+        $config_key = self::getKey($suffix);
+        return array_key_exists($config_key, self::$_configs) ? self::$_configs[$config_key] : NULL;
+    }
+
+    /**
+     * Set connection config
+     *
+     * @param $config
+     * @param null $suffix
+     */
+    public static function setConfig($config, $suffix = NULL)
+    {
+        $config_key = self::getKey($suffix);
+        self::$_configs[$config_key] = $config;
+    }
+
+    /**
+     * Alias: get PDO connection
+     *
+     * @param null $suffix
+     * @return PDO
+     */
+    public static function getConnection($suffix = NULL): \PDO
+    {
+        return self::getInstance($suffix);
+    }
+
+    /**
+     * Set current connection key for internal calls === setContext() ?
+     *
+     * @param $suffix
+     */
+    public static function setConnection($suffix)
+    {
+        self::$_current_connection = self::getKey($suffix);
+    }
+
+    /**
+     * Get class instance == connection instance
+     *
+     * @param null $suffix
+     * @return PDO
+     */
+    public static function getInstance($suffix = NULL):\PDO
+    {
+        $key = self::getKey($suffix);
+        if (self::checkInstance($suffix)) {
+            return self::$_instances[ $key ];
+        }
+
+        new self($suffix);
+        return self::$_instances[ $key ];
+
+        /* old :
+        $key = self::getKey($suffix);
+        if (!self::checkInstance($suffix)) {
+            self::$_instances[$key] = new self($suffix);
+        }
+        return self::$_instances[$key];
+        */
+    }
+
+    /**
+     * Get tables prefix for given connection
      *
      * @param null $suffix
      * @return null|string
@@ -218,18 +304,19 @@ class DB implements DBConnectionInterface {
 
         return
             array_key_exists('table_prefix', self::$_configs[$config_key] )
-            ? self::$_configs[$config_key]['table_prefix']
-            : '';
+                ? self::$_configs[$config_key]['table_prefix']
+                : '';
     }
 
+
     /**
-     *
      *
      * @param $query
      * @param null $suffix
      * @return bool|\PDOStatement
      */
-    public static function query($query, $suffix = NULL) {
+    public static function query($query, $suffix = NULL)
+    {
         $state = FALSE;
 
         try {
@@ -241,24 +328,22 @@ class DB implements DBConnectionInterface {
         return $state;
     }
 
-    //@todo: функция setContext($suffix) - которая устанавливает для всех дальнейших действий переданный суффикс значением по умолчанию
-
     /**
-     *
+     * Get count(*) for given table
      *
      * @param $table
      * @param null $suffix
      * @return mixed|null
      */
-    public static function rowcount($table, $suffix = NULL) {
-        if ($table == '')
-            return null;
+    public static function getRowCount($table, $suffix = NULL)
+    {
+        if ($table == '') return null;
 
         return self::getConnection($suffix)->query("SELECT COUNT(*) AS cnt FROM {$table}")->fetchColumn();
     }
 
     /**
-     * Аналог rowcound, только дает возможность выбрать поле выборки и условие
+     * Conditional getRowCount()
      *
      * @param $table
      * @param string $field
@@ -266,7 +351,7 @@ class DB implements DBConnectionInterface {
      * @param null $suffix
      * @return mixed|null
      */
-    public static function getRowCount($table, $field = '*', $condition = '', $suffix = NULL)
+    public static function getRowCountConditional($table, $field = '*', $condition = '', $suffix = NULL)
     {
         if ($table === '') return null;
 
@@ -275,11 +360,13 @@ class DB implements DBConnectionInterface {
 
         $query = "SELECT COUNT({$field}) AS rowcount FROM {$table} {$where}";
 
+        // $suff = self::$_current_connection ?? $suffix;
+
         return self::getConnection($suffix)->query($query)->fetchColumn();
     }
 
     /**
-     * Хелпер
+     * get Last Insert ID
      *
      * @param null $suffix
      */
@@ -288,9 +375,8 @@ class DB implements DBConnectionInterface {
         self::getConnection($suffix)->lastInsertId();
     }
 
-
     /**
-     * Билдер INSERT-выражения
+     * Build INSERT-query by dataset for given table
      *
      * @param $tablename
      * @param $dataset
@@ -317,7 +403,7 @@ class DB implements DBConnectionInterface {
     }
 
     /**
-     * Билдер UPDATE-выражения
+     * Build UPDATE query by dataset for given table
      *
      * @param $tablename
      * @param $dataset
@@ -346,5 +432,27 @@ class DB implements DBConnectionInterface {
         return $query;
     }
 
+    /**
+     * Converts connection suffix to internal connection key
+     *
+     * @param null $suffix
+     * @return string
+     */
+    private static function getKey($suffix = NULL)
+    {
+        return 'database' . ($suffix ? ":{$suffix}" : '');
+    }
+
+    /**
+     * Check existance of connection in instances array
+     *
+     * @param null $suffix
+     * @return bool
+     */
+    private static function checkInstance($suffix = NULL) {
+
+        $key = self::getKey($suffix);
+        return ( array_key_exists($key, self::$_instances) && self::$_instances[$key] !== NULL  );
+    }
 
 }
